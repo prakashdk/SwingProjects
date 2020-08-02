@@ -1,18 +1,24 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.MatteBorder;
 
 class OrdersPage extends JFrame implements ActionListener {
 
 	String username;
 	JPanel ordersPanel[];
-	JPanel ordersView;
+	JPanel ordersView,backgroundPanel;
 	JButton deliveryInfoButton[],takeDeliveryButton[],cancelButton[],backButton;
 	JScrollPane scrollableView;
 	DatabaseHandler database;
 	ArrayList customerNameList,customerOrderList,customerUsernameList,orderTimeList;
+	JLabel backgroundLabel,noOrderLabel,titleLabel;
 	OrdersPage(String username){
 		database=new DatabaseHandler();
 		customerNameList=new ArrayList();
@@ -25,10 +31,15 @@ class OrdersPage extends JFrame implements ActionListener {
 		ordersPanel=new JPanel[customerNameList.size()];
 		deliveryInfoButton=new JButton[customerNameList.size()];
 		takeDeliveryButton=new JButton[customerNameList.size()];
-		backButton=new JButton("Back");
+		backButton=new JButton();
 		cancelButton=new JButton[customerNameList.size()];
 		ordersView=new JPanel();
 		ordersView.setLayout(new BoxLayout(ordersView,BoxLayout.Y_AXIS));
+		backgroundLabel=new JLabel();
+		noOrderLabel=new JLabel("",SwingConstants.CENTER);
+		titleLabel=new JLabel("Orders",SwingConstants.CENTER);
+		backgroundPanel=new JPanel();
+		
 		for(int i=0;i<customerNameList.size();i++) {
 			ordersPanel[i]=new JPanel();
 			ordersPanel[i].add(new JLabel(String.valueOf(customerNameList.get(i)).toUpperCase()));
@@ -41,16 +52,63 @@ class OrdersPage extends JFrame implements ActionListener {
 			ordersPanel[i].add(deliveryInfoButton[i]);
 			ordersPanel[i].add(takeDeliveryButton[i]);
 			ordersPanel[i].add(cancelButton[i]);
+			ordersPanel[i].setBackground(Color.WHITE);
 			ordersView.add(ordersPanel[i]);
 		}
+		ordersView.setBackground(Color.WHITE);
 		scrollableView=new JScrollPane(ordersView);
-		scrollableView.setBounds(100,100,300,200);
-		backButton.setBounds(150,350,100,40);
+		
+		try {
+			BufferedImage backIcon = ImageIO.read(new File(new ConstantPath().ICONS_URL+"backIcon.jpg"));
+			Image scaledIcon=backIcon.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+			backButton.setIcon(new ImageIcon(scaledIcon));
+			backButton.setBackground(Color.WHITE);
+			backButton.setBorderPainted(false);
+			backButton.setFocusPainted(false);
+			BufferedImage background=ImageIO.read(new File(new ConstantPath().ICONS_URL+"appLogo10.jpg"));
+			scaledIcon=background.getScaledInstance(500, 500, Image.SCALE_SMOOTH);
+			backgroundLabel.setIcon(new ImageIcon(scaledIcon));
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, "Icon error");
+		}
+		
+		if(customerNameList.size()==0) {
+			noOrderLabel.setText("No More orders Available!");
+			noOrderLabel.setForeground(Color.RED);
+			noOrderLabel.setFont(new Font("Verdana",Font.BOLD,16));
+			noOrderLabel.setVisible(true);
+			scrollableView.setVisible(false);
+		}
+		else {
+			noOrderLabel.setText("");
+			noOrderLabel.setVisible(false);
+			scrollableView.setVisible(true);
+		}
+		
+		scrollableView.setBounds(80,100,340,200);
+		backButton.setBounds(10,10,40,40);
+		noOrderLabel.setBounds(110,150,300,60);
+		titleLabel.setBounds(100,0,300,60);
+		backgroundPanel.setBounds(0,0,500,60);
 		
 		backButton.addActionListener(this);
+		titleLabel.setForeground(Color.BLACK);
+		titleLabel.setFont(new Font("Timesroman",Font.BOLD,24));
+		titleLabel.setBackground(Color.WHITE);
+		backgroundPanel.setBackground(Color.WHITE);
+		backgroundPanel.setBorder(new MatteBorder(1,1,1, 1,Color.BLACK));
+		titleLabel.setBorder(new MatteBorder(1,0,1, 0,Color.BLACK));
+		backButton.setBorder(new MatteBorder(1,1,1, 1,Color.BLACK));
+		titleLabel.setOpaque(true);
+		scrollableView.setBackground(Color.WHITE);
 		
+		setContentPane(backgroundLabel);
+		add(titleLabel);
 		add(scrollableView);
 		add(backButton);
+		add(noOrderLabel);
+		add(backgroundPanel);
+		
 		frameInitialize();
 	}
 	private void frameInitialize() {

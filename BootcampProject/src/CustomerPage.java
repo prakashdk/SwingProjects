@@ -1,7 +1,13 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.*;
 
 class CustomerPage extends JFrame implements ActionListener,ListSelectionListener {
@@ -16,7 +22,10 @@ class CustomerPage extends JFrame implements ActionListener,ListSelectionListene
 	JComboBox shopTypeBox,shopCityBox; 
 	JPanel filtersPanel;
 	JScrollPane scrollableListView;
-	JLabel noShopLabel;
+	JLabel noShopLabel,backgroundLabel;
+	JPopupMenu popupMenu;
+	JMenuItem logout,deleteAccount;
+	
 	CustomerPage(String username,ArrayList passedShopList,int typeIndex,int cityIndex){
 		this.username=username;
 		database=new DatabaseHandler();
@@ -29,6 +38,14 @@ class CustomerPage extends JFrame implements ActionListener,ListSelectionListene
 		noShopLabel.setBounds(150,220,300,50);
 		filtersPanel=new JPanel();
 		filterButton=new JButton("Filter");
+		popupMenu=new JPopupMenu();
+		logout=new JMenuItem("Logout");
+		deleteAccount=new JMenuItem("Delete Account");
+		
+		popupMenu.add(logout);
+		popupMenu.addSeparator();
+		popupMenu.add(deleteAccount);
+		
 		ArrayList typeList=new ArrayList();
 		typeList.add("TYPES");
 		typeList.add("All");
@@ -43,20 +60,26 @@ class CustomerPage extends JFrame implements ActionListener,ListSelectionListene
 		shopCityBox=new JComboBox(cityList.toArray());
 		
 		goButton=new JButton("Go");
-		nameLabel=new JLabel("Welcome Mr."+database.getName("CUSTOMER", username).toUpperCase());
+		backgroundLabel=new JLabel();
+		String customerString=database.getName("CUSTOMER", username);
+		nameLabel=new JLabel("Welcome Mr."+customerString.substring(0,1).toUpperCase()+customerString.substring(1));
 		shopList=new ArrayList<ShopInfo>();
 		scrollableListView=new JScrollPane();
+		
+		int noS=0;
 		if(passedShopList==null) {
 			noShopLabel.setVisible(false);
-			scrollableListView.setVisible(true);
+			//scrollableListView.setVisible(true);
+			noS=0;
 			shopList=database.getShops();
 		}
 		else if(passedShopList.isEmpty()) {
 			
 			shopTypeBox.setSelectedIndex(typeIndex);
 			shopCityBox.setSelectedIndex(cityIndex);
+			noS=1;
 			noShopLabel.setVisible(true);
-			scrollableListView.setVisible(false);
+			
 		}
 		else {
 			
@@ -64,7 +87,8 @@ class CustomerPage extends JFrame implements ActionListener,ListSelectionListene
 			shopTypeBox.setSelectedIndex(typeIndex);
 			shopCityBox.setSelectedIndex(cityIndex);
 			noShopLabel.setVisible(false);
-			scrollableListView.setVisible(true);
+			noS=0;
+			//scrollableListView.setVisible(true);
 		}
 		for(int i=0;i<shopList.size();i++) {
 			ShopInfo shopInfo=shopList.get(i);
@@ -77,32 +101,93 @@ class CustomerPage extends JFrame implements ActionListener,ListSelectionListene
 		shopListView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		scrollableListView=new JScrollPane(shopListView);
-		nameLabel.setBounds(100,50,300,40);
+		if (noS==1) {
+			scrollableListView.setVisible(false);
+		}
+		else {
+			scrollableListView.setVisible(true);
+		}
+		
+		nameLabel.setBounds(130,70,300,40);
 		myCartButton.setBounds(0,0,120,40);
-		myOrdersButton.setBounds(460,0,120,40);
+		myOrdersButton.setBounds(460,0,130,40);
 		filtersPanel.setBounds(120,0,340,40);
 		goButton.setBounds(200,350,100,40);
-		scrollableListView.setBounds(100,150,300,200);
+		scrollableListView.setBounds(130,150,300,200);
 		
 		shopListView.addListSelectionListener(this);
 		myCartButton.addActionListener(this);
 		myOrdersButton.addActionListener(this);
 		goButton.addActionListener(this);
 		filterButton.addActionListener(this);
-		//shopTypeBox.addItemListener(this);
-		//shopCityBox.addItemListener(this);
+		logout.addActionListener(this);
+		deleteAccount.addActionListener(this);
+		
+		myOrdersButton.setBackground(Color.WHITE);
+		myCartButton.setBackground(Color.WHITE);
+		filtersPanel.setBackground(Color.WHITE);
+		filtersPanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLACK));
+		nameLabel.setFont(new Font("Timesroman",Font.BOLD,20));
+		
+		try {
+			BufferedImage ordersIcon = ImageIO.read(new File(new ConstantPath().ICONS_URL + "ordersIcon.jpg"));
+			Image scaledIcon = ordersIcon.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+			myOrdersButton.setIcon(new ImageIcon(scaledIcon));
+			myCartButton.setIcon(new ImageIcon(scaledIcon));
+			BufferedImage background=ImageIO.read(new File(new ConstantPath().ICONS_URL+"appLogo10.jpg"));
+			scaledIcon=background.getScaledInstance(740, 500, Image.SCALE_SMOOTH);
+			backgroundLabel.setIcon(new ImageIcon(scaledIcon));
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, "Icon error");
+		}
 		
 		filtersPanel.add(shopTypeBox);
 		filtersPanel.add(shopCityBox);
 		filtersPanel.add(filterButton);
+		setContentPane(backgroundLabel);
 		add(myOrdersButton);
 		add(noShopLabel);
 		add(filtersPanel);
 		add(nameLabel);
 		add(myCartButton);
-		add(goButton);
+		//add(goButton);
 		setResizable(false);
 		add(scrollableListView);
+		
+addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (SwingUtilities.isRightMouseButton(e)) {
+					popupMenu.show(CustomerPage.this, e.getX(), e.getY());
+				}
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				
+			}
+			
+		});
+		
 		frameInitialize();
 	}
 	private void frameInitialize() {
@@ -115,16 +200,11 @@ class CustomerPage extends JFrame implements ActionListener,ListSelectionListene
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource()==myCartButton) {
-			//JOptionPane.showMessageDialog(this,database.getCustomerCartDetails("ORDER_INFO", username).toString()+
-				//	database.getCustomerCartDetails("ORDERED_TIME", username).toString());
 			setVisible(false);
 			new CustomerCart(username);
 			
 		}
 		if(e.getSource()==myOrdersButton) {
-			//JOptionPane.showMessageDialog(this,"Updating");
-			//JOptionPane.showMessageDialog(this,database.getCustomerOrderDetails("ORDER_INFO", username).toString()+
-				//	database.getCustomerOrderDetails("ORDERED_TIME", username).toString());
 			setVisible(false);
 			new CustomerOrders(username);
 		}
@@ -169,6 +249,21 @@ class CustomerPage extends JFrame implements ActionListener,ListSelectionListene
 			else {
 				JOptionPane.showMessageDialog(this,shopListView.getSelectedValue());
 			}	
+		}
+		if (e.getSource()==logout) {
+			int n=JOptionPane.showConfirmDialog(this, "Are you sure want to exit?");
+			if (JOptionPane.YES_OPTION==n) {
+				dispose();
+				new LoginPage();
+			}
+		}
+		if (e.getSource()==deleteAccount) {
+			int n=JOptionPane.showConfirmDialog(this, "Are you sure want to delete your account?");
+			if (JOptionPane.YES_OPTION==n) {
+				database.deleteCustomer(username);
+				dispose();
+				new LoginPage();
+			}
 		}
 	}
 	

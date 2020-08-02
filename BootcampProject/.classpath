@@ -7,5 +7,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/Users/Yuvaraj/Downloads/JAR files/sqlite-jdbc-3.27.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Yuvaraj/Downloads/mysql-connector-java-5.1.39.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Yuvaraj/Downloads/mail.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Yuvaraj/Downloads/activation (1).jar"/>
+	<classpathentry kind="lib" path="C:/Users/Yuvaraj/Downloads/techsoftemail.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

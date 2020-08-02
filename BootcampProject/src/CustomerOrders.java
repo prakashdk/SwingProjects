@@ -1,18 +1,24 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.MatteBorder;
 
 class CustomerOrders extends JFrame implements ActionListener {
 
 	String username;
 	JPanel ordersPanel[];
-	JPanel ordersView;
+	JPanel ordersView,titlePanel;
 	JButton deliveryInfoButton[],contactButton[],cancelButton[],backButton;
 	JScrollPane scrollableView;
 	DatabaseHandler database;
 	ArrayList orderStatusList,customerOrderList,shopkeeperUsernameList,orderTimeList,orderContactList;
+	JLabel backgroundLabel,titleLabel,noOrderLabel;
 	CustomerOrders(String username){
 		database=new DatabaseHandler();
 		customerOrderList=new ArrayList();
@@ -30,9 +36,13 @@ class CustomerOrders extends JFrame implements ActionListener {
 		deliveryInfoButton=new JButton[shopkeeperUsernameList.size()];
 		contactButton=new JButton[shopkeeperUsernameList.size()];
 		cancelButton=new JButton[shopkeeperUsernameList.size()];
-		backButton=new JButton("Back");
+		backButton=new JButton();
 		ordersView=new JPanel();
 		ordersView.setLayout(new BoxLayout(ordersView,BoxLayout.Y_AXIS));
+		backgroundLabel=new JLabel();
+		titleLabel=new JLabel("My Orders",SwingConstants.CENTER);
+		titlePanel=new JPanel();
+		noOrderLabel=new JLabel("No Orders Placed Yet!",SwingConstants.CENTER);
 		
 		for(int i=0;i<shopkeeperUsernameList.size();i++) {
 			ordersPanel[i]=new JPanel();
@@ -65,17 +75,60 @@ class CustomerOrders extends JFrame implements ActionListener {
 			}
 			
 			ordersPanel[i].add(statusLabel);
+			ordersPanel[i].setBackground(Color.WHITE);
+			ordersPanel[i].setBorder(new MatteBorder(0, 0, 1, 0, Color.BLACK));
 			ordersView.add(ordersPanel[i]);
 		}
+		
+		try {
+			BufferedImage backIcon = ImageIO.read(new File(new ConstantPath().ICONS_URL+"backIcon.jpg"));
+			Image scaledIcon=backIcon.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+			backButton.setIcon(new ImageIcon(scaledIcon));
+			backButton.setBackground(Color.WHITE);
+			backButton.setBorderPainted(false);
+			backButton.setFocusPainted(false);
+			BufferedImage background=ImageIO.read(new File(new ConstantPath().ICONS_URL+"appLogo10.jpg"));
+			scaledIcon=background.getScaledInstance(500, 500, Image.SCALE_SMOOTH);
+			backgroundLabel.setIcon(new ImageIcon(scaledIcon));
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, "Icon error");
+		}
+		
+		ordersView.setBackground(Color.WHITE);
 		scrollableView=new JScrollPane(ordersView);
-		scrollableView.setBounds(50,10,300,200);
-		backButton.setBounds(150,350,100,40);
+		
+		if(shopkeeperUsernameList.size()==0) {
+			noOrderLabel.setVisible(true);
+			scrollableView.setVisible(false);
+		}
+		else {
+			noOrderLabel.setVisible(false);
+			scrollableView.setVisible(true);
+		}
+		
+		scrollableView.setBounds(25,100,440,300);
+		backButton.setBounds(10,10,40,40);
+		titleLabel.setBounds(80,10,300,40);
+		titlePanel.setBounds(0,0,500,60);
+		noOrderLabel.setBounds(50,200,300,40);
 		
 		backButton.addActionListener(this);
+		scrollableView.setBackground(Color.WHITE);
+		titlePanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLACK));
+		titleLabel.setBackground(Color.WHITE);
+		titlePanel.setBackground(Color.WHITE);
+		titleLabel.setFont(new Font("Timesroman",Font.BOLD,24));
+		noOrderLabel.setFont(new Font("Vederna",Font.BOLD,16));
+		noOrderLabel.setForeground(Color.RED);
 		
+		setContentPane(backgroundLabel);
+		add(noOrderLabel);
+		add(titleLabel);
+		add(titlePanel);
 		add(scrollableView);
 		add(backButton);
 		frameInitialize();
+		
 	}
 	private void frameInitialize() {
 		setSize(500, 500);

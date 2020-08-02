@@ -7,17 +7,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import javax.imageio.*;
 import javax.swing.*;
+import javax.swing.border.MatteBorder;
 
 class CustomerOrderPage extends JFrame implements ActionListener,ItemListener {
 	String customerUsername,shopkeeperUsername,shopName,shopkeeperName,shopkeeperContact;
-	JLabel shopNameLabel,ownerNameLabel,ownerContactLabel,noProductsLabel;
+	JLabel shopNameLabel,ownerNameLabel,ownerContactLabel,noProductsLabel,backgroundLabel;
 	JButton placeOrderButton, backButton,addCartButton,filterButton;
 	DatabaseHandler database;
 	JCheckBox productBox[];
 	ArrayList<ShopkeeperInfo> shopkeeperInfo;
 	ArrayList productList;
 	JScrollPane productsPane;
-	JPanel productsPanel,filtersPanel;
+	JPanel productsPanel,filtersPanel,titlePanel;
 	ArrayList selectedProductIndexList;
 	int quantityList[];
 	JComboBox categoryBox;
@@ -48,6 +49,9 @@ class CustomerOrderPage extends JFrame implements ActionListener,ItemListener {
 		shopkeeperInfo=database.getShopkeepers();
 		shopName=database.getShopDetails("SHOPNAME", shopkeeperUsername);
 		noProductsLabel=new JLabel();
+		backgroundLabel=new JLabel();
+		titlePanel=new JPanel();
+		
 		noProductsLabel.setForeground(Color.RED);
 		for(int i=0;i<shopkeeperInfo.size();i++) {
 			if(shopkeeperUsername.equals(shopkeeperInfo.get(i).username)) {
@@ -84,9 +88,12 @@ class CustomerOrderPage extends JFrame implements ActionListener,ItemListener {
 		for(int i=0;i<productList.size();i++) {
 			productBox[i]=new JCheckBox((String)productList.get(i));
 			productBox[i].addItemListener(this);
+			productBox[i].setBackground(Color.WHITE);
 			productsPanel.add(productBox[i]);
 			y+=30;
 		}
+		
+		productsPanel.setBackground(Color.WHITE);
 		productsPane=new JScrollPane(productsPanel);
 		if(f==1) {
 			productsPane.setVisible(false);
@@ -94,10 +101,12 @@ class CustomerOrderPage extends JFrame implements ActionListener,ItemListener {
 		else {
 			productsPane.setVisible(true);
 		}
-		shopNameLabel = new JLabel(shopName.toUpperCase());
-		ownerNameLabel = new JLabel("Owner name : Mr."+shopkeeperName.toUpperCase());
+		
+		String shopNameString=capitalize(shopName);
+		shopNameLabel = new JLabel(shopNameString,SwingConstants.CENTER);
+		ownerNameLabel = new JLabel("Owner name : Mr."+shopkeeperName.substring(0,1).toUpperCase()+shopkeeperName.substring(1));
 		ownerContactLabel = new JLabel("Owner contact : "+shopkeeperContact);
-		backButton = new JButton("Back");
+		backButton = new JButton();
 		
 		filterButton=new JButton("Filter");
 
@@ -109,14 +118,26 @@ class CustomerOrderPage extends JFrame implements ActionListener,ItemListener {
 		filtersPanel.add(categoryBox);
 		filtersPanel.add(filterButton);
 
-		shopNameLabel.setBounds(100, 0, 150, 40);
-		filtersPanel.setBounds(250, 0, 200, 40);
-		ownerNameLabel.setBounds(100, 50, 300, 40);
-		ownerContactLabel.setBounds(100, 100, 300, 40);
+		shopNameLabel.setBounds(50, 10, 400, 40);
+		filtersPanel.setBounds(280,70, 200, 40);
+		ownerNameLabel.setBounds(10, 70, 300, 40);
+		ownerContactLabel.setBounds(10, 370, 300, 40);
 		productsPane.setBounds(100,150,250,150);
-		placeOrderButton.setBounds(100, 300, 150, 40);
-		addCartButton.setBounds(250, 300, 150, 40);
-		backButton.setBounds(100, 350, 150, 40);
+		placeOrderButton.setBounds(70, 320, 150, 40);
+		addCartButton.setBounds(240, 320, 150, 40);
+		backButton.setBounds(10, 10, 40, 40);
+		titlePanel.setBounds(0,0,500,60);
+		
+		titlePanel.setBackground(Color.WHITE);
+		titlePanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLACK));
+		shopNameLabel.setBackground(Color.WHITE);
+		shopNameLabel.setFont(new Font("Timesroman",Font.BOLD,24));
+		shopNameLabel.setOpaque(true);
+		filtersPanel.setBackground(new Color(0,0,0,0.1f));
+		productsPane.setBackground(Color.WHITE);
+		placeOrderButton.setBackground(Color.WHITE);
+		addCartButton.setBackground(Color.WHITE);
+		ownerNameLabel.setFont(new Font("Timesroman",Font.PLAIN,16));
 
 		try {
 			BufferedImage addIcon=ImageIO.read(new File(new ConstantPath().ICONS_URL+"addIcon.png"));
@@ -127,9 +148,18 @@ class CustomerOrderPage extends JFrame implements ActionListener,ItemListener {
 			backButton.setIcon(new ImageIcon(scaledIcon));
 			backButton.setBorderPainted(false);
 			backButton.setContentAreaFilled(false);
+			backButton.setOpaque(true);
+			BufferedImage background=ImageIO.read(new File(new ConstantPath().ICONS_URL+"appLogo10.jpg"));
+			scaledIcon=background.getScaledInstance(500, 500, Image.SCALE_SMOOTH);
+			backgroundLabel.setIcon(new ImageIcon(scaledIcon));
+			BufferedImage ordersIcon = ImageIO.read(new File(new ConstantPath().ICONS_URL + "ordersIcon.jpg"));
+			scaledIcon = ordersIcon.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+			placeOrderButton.setIcon(new ImageIcon(scaledIcon));
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, "Icon loading error");
 		}
+		
+		setContentPane(backgroundLabel);
 		add(filtersPanel);
 		add(productsPane);
 		add(noProductsLabel);
@@ -139,7 +169,17 @@ class CustomerOrderPage extends JFrame implements ActionListener,ItemListener {
 		add(placeOrderButton);
 		add(addCartButton);
 		add(backButton);
+		add(titlePanel);
 		frameInitialize();
+	}
+	
+	private String capitalize(String name) {
+		String shopName[] = name.split(" ");
+		String shopNameString = "";
+		for (int i = 0; i < shopName.length; i++) {
+			shopNameString += shopName[i].substring(0, 1).toUpperCase() + shopName[i].substring(1) + " ";
+		}
+		return shopNameString;
 	}
 
 	private void frameInitialize() {

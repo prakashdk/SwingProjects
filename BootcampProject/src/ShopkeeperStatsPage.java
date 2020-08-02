@@ -1,19 +1,25 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import javax.swing.*;
 
-class ShopkeeperStatsPage extends JFrame implements ActionListener {
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.MatteBorder;
+
+class ShopkeeperStatsPage extends JFrame implements ActionListener,AdjustmentListener {
 
 	String username;
 	JPanel ordersPanel[];
-	JPanel ordersView,statsPanel;
+	JPanel ordersView,statsPanel,titlePanel;
 	JButton deliveryInfoButton[],backButton;
 	JScrollPane scrollableView,scrollableStatsView;
 	DatabaseHandler database;
 	ArrayList orderStatusList,customerOrderList,customerUsernameList,orderTimeList;
 	ArrayList orderedProductsList,orderedProductsPrice,deliveredOrders;
-	JLabel profitLabel;
+	JLabel profitLabel,backgroundLabel,titleLabel;
 	ShopkeeperStatsPage(String username){
 		database=new DatabaseHandler();
 		customerOrderList=new ArrayList();
@@ -34,6 +40,9 @@ class ShopkeeperStatsPage extends JFrame implements ActionListener {
 		backButton=new JButton("Back");
 		ordersView=new JPanel();
 		ordersView.setLayout(new BoxLayout(ordersView,BoxLayout.Y_AXIS));
+		backgroundLabel=new JLabel();
+		titleLabel=new JLabel("Stats & History",SwingConstants.CENTER);
+		titlePanel=new JPanel();
 		
 		for(int i=0;i<customerOrderList.size();i++) {
 			if(orderStatusList.get(i).equals("true")) {
@@ -67,28 +76,72 @@ class ShopkeeperStatsPage extends JFrame implements ActionListener {
 			}
 			ordersPanel[i].add(deliveryInfoButton[i]);
 			ordersPanel[i].add(statusLabel);
+			ordersPanel[i].setBorder(new MatteBorder(0, 0, 1, 0, Color.BLACK));
+			ordersPanel[i].setBackground(Color.WHITE);
 			ordersView.add(ordersPanel[i]);
 		}
+		
 		scrollableView=new JScrollPane(ordersView);
-		scrollableView.setBounds(50,100,300,200);
 		statsPanel=new StatsGraph(orderedProductsList,orderedProductsPrice);
 		statsPanel.setBackground(Color.WHITE);
+		Dimension d = new Dimension(orderedProductsList.size()*100>=300?(orderedProductsList.size()*100):(300), 300);
+		statsPanel.setMinimumSize(d);
+		statsPanel.setMaximumSize(d);
+		statsPanel.setPreferredSize(d);
 		scrollableStatsView=new JScrollPane(statsPanel);
-		scrollableStatsView.setBounds(50,300,orderedProductsList.size()*100,250);
-		profitLabel.setBounds(100, 550, 200, 40);
-		backButton.setBounds(150,600,100,40);
+		scrollableStatsView.setBackground(Color.WHITE);
+		profitLabel.setFont(new Font("sanseriff",Font.BOLD,24));
 		
+		scrollableView.setBounds(50,100,300,200);
+		profitLabel.setBounds(50, 350, 300, 40);
+		scrollableStatsView.setBounds(400,80,300,270);
+		backButton.setBounds(10,10,40,40);
+		titleLabel.setBounds(200,0,300,60);
+		titlePanel.setBounds(0,0,740,60);
+		
+		scrollableStatsView.getVerticalScrollBar().addAdjustmentListener(this);
+		scrollableStatsView.getHorizontalScrollBar().addAdjustmentListener(this);
+		scrollableStatsView.setBackground(Color.WHITE);
 		backButton.addActionListener(this);
 		
+		BufferedImage backIcon;
+		try {
+			backIcon = ImageIO.read(new File(new ConstantPath().ICONS_URL+"backIcon.jpg"));
+			Image scaledIcon=backIcon.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+			backButton.setIcon(new ImageIcon(scaledIcon));
+			backButton.setBackground(Color.WHITE);
+			backButton.setBorderPainted(false);
+			backButton.setFocusPainted(false);
+			backButton.setForeground(Color.WHITE);
+			BufferedImage background=ImageIO.read(new File(new ConstantPath().ICONS_URL+"appLogo10.jpg"));
+			scaledIcon=background.getScaledInstance(740, 500, Image.SCALE_SMOOTH);
+			backgroundLabel.setIcon(new ImageIcon(scaledIcon));
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, "Icon error");
+		}
+		
+		titleLabel.setForeground(Color.BLACK);
+		titleLabel.setFont(new Font("Timesroman",Font.BOLD,28));
+		titleLabel.setBackground(Color.WHITE);
+		titlePanel.setBackground(Color.WHITE);
+		titlePanel.setBorder(new MatteBorder(1,1,1, 1,Color.BLACK));
+		titleLabel.setBorder(new MatteBorder(1,0,1, 0,Color.BLACK));
+		backButton.setBorder(new MatteBorder(1,1,1, 1,Color.BLACK));
+		titleLabel.setOpaque(true);
+		
+		setContentPane(backgroundLabel);
+		add(titleLabel);
 		add(scrollableView);
-		add(scrollableStatsView);
+		getContentPane().add(scrollableStatsView);
 		add(profitLabel);
 		add(backButton);
+		add(titlePanel);
 		frameInitialize();
 	}
 	private void frameInitialize() {
-		setSize(500, 700);
-		setLocation(400, 50);
+		//getContentPane().setBackground(new Color(0.0f,0.0f,1.0f,0.5f));
+		setSize(740, 500);
+		setLocationRelativeTo(null);
 		setTitle("Stats");
 		setLayout(null);
 		setVisible(true);
@@ -139,6 +192,10 @@ class ShopkeeperStatsPage extends JFrame implements ActionListener {
 		}
 		profitLabel.setText("Profits Earned : "+profit);
 	}
+	@Override
+	public void adjustmentValueChanged(AdjustmentEvent e) {
+		scrollableStatsView.repaint();
+	}
 }
 
 class StatsGraph extends JPanel{
@@ -156,6 +213,7 @@ class StatsGraph extends JPanel{
 			g.fillRect(x, y-height, 30,height);
 			g.setColor(Color.BLACK);
 			g.drawLine(0, y, 2000, y);
+			g.setFont(new Font("sanseriff",Font.BOLD,12));
 			g.drawString((String)productList.get(i), x-10, y+20);
 			g.drawString("Rs."+priceList.get(i), x, y-height-10);
 			x+=100;

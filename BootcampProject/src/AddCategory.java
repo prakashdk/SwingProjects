@@ -11,7 +11,7 @@ class AddCategory extends JFrame implements ActionListener{
 	int flag;
 	DatabaseHandler database;
 	JTextField categoryNameField;
-	JLabel categoryLabel,noProductsLabel; 
+	JLabel categoryLabel,noProductsLabel,backgroundLabel; 
 	JCheckBox productsBox[];
 	JButton addButton,backButton; 
 	String username;
@@ -40,6 +40,7 @@ class AddCategory extends JFrame implements ActionListener{
 		noProductsLabel.setForeground(Color.RED);
 		productsPanel=new JPanel();
 		productsPanel.setLayout(new BoxLayout(productsPanel,BoxLayout.Y_AXIS));
+		backgroundLabel=new JLabel();
 		
 		categoryLabel.setBounds(50,50,150,40);
 		categoryNameField.setBounds(200,50,200,40);
@@ -73,11 +74,14 @@ class AddCategory extends JFrame implements ActionListener{
 		for(int i=0;i<productsLength;i++) {
 			
 			productsBox[i]=new JCheckBox((String)productList.get(i));
+			productsBox[i].setBackground(Color.WHITE);
 			//productsBox[i].setBounds(0,y,200,40);
 				productsPanel.add(productsBox[i]);
 	
 			y+=30;
 		}
+		
+		productsPanel.setBackground(Color.WHITE);
 		productsPane=new JScrollPane(productsPanel);
 		if(f==1) {
 			productsPane.setVisible(false);
@@ -85,11 +89,13 @@ class AddCategory extends JFrame implements ActionListener{
 		else {
 			productsPane.setVisible(true);
 		}
+		
 		productsPane.setBounds(100,100,250,150);
 		addButton.setBounds(100,300,200,40);
 		addButton.addActionListener(this);
 		backButton.setBounds(100,350,200,40);
 		backButton.addActionListener(this);
+		productsPane.setBackground(Color.WHITE);
 		
 		try {
 			BufferedImage addIcon = ImageIO.read(new File(new ConstantPath().ICONS_URL+"addIcon.png"));
@@ -100,9 +106,14 @@ class AddCategory extends JFrame implements ActionListener{
 			backButton.setIcon(new ImageIcon(scaledIcon));
 			backButton.setBorderPainted(false);
 			backButton.setContentAreaFilled(false);
+			BufferedImage background=ImageIO.read(new File(new ConstantPath().ICONS_URL+"appLogo10.jpg"));
+			scaledIcon=background.getScaledInstance(500, 500, Image.SCALE_SMOOTH);
+			backgroundLabel.setIcon(new ImageIcon(scaledIcon));
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this, e);
 		}
+		
+		setContentPane(backgroundLabel);
 		add(noProductsLabel);
 		getContentPane().add(productsPane);
 		add(categoryNameField);
